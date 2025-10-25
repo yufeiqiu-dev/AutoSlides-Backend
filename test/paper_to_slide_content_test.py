@@ -27,7 +27,7 @@ def test_generate_slide_content_with_mock_api(mocker):
     mock_model_instance = mocker.MagicMock()
     mock_model_instance.generate_content.return_value.text = "Mocked slide content"
     mocker.patch(
-        'App.tools.TextToSlideContent.genai.GenerativeModel',
+        'app.tools.TextToSlideContent.genai.GenerativeModel',
         return_value=mock_model_instance
     )
 
