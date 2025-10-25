@@ -1,31 +1,12 @@
-# app.py
-from flask import Flask, request, send_file, jsonify
-from app.tools.pdf_to_slides import pdf_to_slides
+from flask import Flask
+from app.routes import register_routes
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
+    register_routes(app)
+    return app
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
-
-@app.route('/pdf2slides', method=["POST"])
-def pdf_to_slides():
-    """Receive PDF, parse it, summarize, and return PowerPoint."""
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    pdf_file = request.files["file"]
-
-
-    slides = pdf_to_slides(pdf_file)
-
-    # send file to user
-    return send_file(
-        slides,
-        as_attachment=True,
-        download_name="AutoSlide.pptx",
-        mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    )
-
-if __name__ == '__main__':
-    app.run(debug=True) # debug=True enables debug mode for development
+# Flask entry point
+if __name__ == "__main__":
+    app = create_app()
+    app.run(debug=True)

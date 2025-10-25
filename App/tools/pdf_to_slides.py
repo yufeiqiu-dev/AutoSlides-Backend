@@ -1,4 +1,4 @@
-from app.tools.pdf_parser import parse_pdf
+from .pdf_parser import parse_pdf
 def pdf_to_slides(pdf_file):
     # convert pdf to slides using LLM
     
