@@ -27,6 +27,7 @@ def test_extract_text(test_pdf_path):
     assert "Hello" in text
 
 def test_extract_images_empty(test_pdf_path):
+    """Test extracting empty image """
     with open(test_pdf_path, "rb") as f:
         pdf_bytes = f.read()
     imgs = extract_images(pdf_bytes)
@@ -34,6 +35,7 @@ def test_extract_images_empty(test_pdf_path):
     assert len(imgs) == 0  # no images in our fake PDF
 
 def test_parse_pdf(test_pdf_path):
+    """Test pdf parsing function"""
     with open(test_pdf_path, "rb") as f:
         parsed = parse_pdf(f)
     assert "Hello from shared test PDF!" in parsed["text"]

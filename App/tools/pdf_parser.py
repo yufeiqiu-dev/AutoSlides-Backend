@@ -3,6 +3,7 @@ from io import BytesIO
 import fitz
 
 def parse_pdf(pdf_file):
+    """Parse pdf to text and images"""
     pdf_bytes = pdf_file.read()
     parsed = {}
     text = extract_text(pdf_bytes)
@@ -12,6 +13,7 @@ def parse_pdf(pdf_file):
     parsed["image"] = image
     return parsed
 def extract_text(pdf_bytes):
+    """Extract text"""
     all_text = []
     with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
         for page in pdf.pages:
@@ -22,6 +24,7 @@ def extract_text(pdf_bytes):
 
 
 def extract_images(pdf_bytes):
+    """Extract image"""
     images = []
     with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
         for page_index, page in enumerate(doc):
