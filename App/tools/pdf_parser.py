@@ -4,7 +4,14 @@ import fitz
 
 def parse_pdf(pdf_file):
     """Parse pdf to text and images"""
+    print("DEBUG - pdf_file is:", type(pdf_file))
+    if not pdf_file:
+        raise FileNotFoundError("PDF File Doesn't exist!")
     pdf_bytes = pdf_file.read()
+
+    if not pdf_bytes:
+        raise ValueError("Empty PDF content")
+    print(f"--- Parsing {pdf_file.filename} ---")
     parsed = {}
     text = extract_text(pdf_bytes)
     # extract image once text works
