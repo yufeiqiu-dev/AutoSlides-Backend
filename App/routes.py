@@ -13,8 +13,13 @@ def register_routes(app):
     @app.route("/pdf2slides", methods=["POST"])
     def pdf2slides():
         """Handle PDF upload and convert to slides."""
-        if "file" not in request.files:
+        pdf_file = request.files.get("file")
+        if not pdf_file in request.files:
             return jsonify({"error": "No file uploaded"}), 400
+        if pdf_file.filename == "":
+            return jsonify({"error": "File has no name"}), 400
+        if not pdf_file.filename.lower().endswith(".pdf"):
+            return jsonify({"error": "Please upload a PDF file"}), 400
 
         pdf_file = request.files["file"]
 
@@ -28,3 +33,18 @@ def register_routes(app):
             download_name="AutoSlides.pptx",
             mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation"
         )
+    @app.route('/test_pdf_parsing', methods=["POST"])
+    def test_pdf():
+        pdf_file = request.files.get("file")
+        if not pdf_file in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+        if pdf_file.filename == "":
+            return jsonify({"error": "File has no name"}), 400
+        if not pdf_file.filename.lower().endswith(".pdf"):
+            return jsonify({"error": "Please upload a PDF file"}), 400
+
+        parsed = parse_pdf(pdf_file)
+        text = parsed["text"]
+
+        # Return text directly
+        return jsonify({"text": text})
