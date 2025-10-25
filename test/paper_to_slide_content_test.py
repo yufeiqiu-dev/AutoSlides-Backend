@@ -24,6 +24,7 @@ def test_generate_slide_content_with_mock_api(mocker):
     Tests the main function by mocking the Gemini API call using the 'mocker' fixture.
     """
     # 1. Use mocker to patch the GenerativeModel class
+    mocker.patch.dict("os.environ", {"GOOGLE_API_KEY": "FAKE_KEY"})
     mock_model_instance = mocker.MagicMock()
     mock_model_instance.generate_content.return_value.text = "Mocked slide content"
     mocker.patch(
