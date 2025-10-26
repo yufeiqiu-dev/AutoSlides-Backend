@@ -1,5 +1,6 @@
 import os
 import google.generativeai as genai
+import json
 from dotenv import load_dotenv
 
 
@@ -21,9 +22,14 @@ def build_prompt(paper_text: str) -> str:
     ---
 
     Generate the presentation content based on this text.
+    Return only valid JSON. 
+    Do not include code fences, explanations, or text before/after. 
+    If you cannot produce valid JSON, return {{}}.
     """
 
-
+def parse_text_to_json(text:str):
+    data = json.loads(text)
+    return data
 def generate_slide_content(paper_text: str) -> str:
     """
     Analyzes paper text and generates structured slide content using the Gemini API.
@@ -41,7 +47,9 @@ def generate_slide_content(paper_text: str) -> str:
         model = genai.GenerativeModel('models/gemini-pro-latest')
         prompt = build_prompt(paper_text)
         response = model.generate_content(prompt)
-        return response.text
+        json_text = response.text
+        json = parse_text_to_json(json_text)
+        return json
     except Exception as e:
         print(f"An error occurred: {e}")
         return "Error: Could not generate slide content."
