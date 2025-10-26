@@ -26,7 +26,7 @@ def test_generate_slide_content_with_mock_api(mocker):
     # 1. Use mocker to patch the GenerativeModel class
     mocker.patch.dict("os.environ", {"GOOGLE_API_KEY": "FAKE_KEY"})
     mock_model_instance = mocker.MagicMock()
-    mock_model_instance.generate_content.return_value.text = "Mocked slide content"
+    mock_model_instance.generate_content.return_value.text = '{"title": "Mocked slide content"}'
     mocker.patch(
         'app.tools.TextToSlideContent.genai.GenerativeModel',
         return_value=mock_model_instance
@@ -37,7 +37,7 @@ def test_generate_slide_content_with_mock_api(mocker):
     result = generate_slide_content(paper_text)
 
     # 3. Assert that the function returned the mocked data
-    assert result == "Mocked slide content"
+    assert result["title"] == "Mocked slide content"
 
     # 4. Assert that the API was called with the correct prompt
     mock_model_instance.generate_content.assert_called_once()

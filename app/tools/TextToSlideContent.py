@@ -1,5 +1,7 @@
 import os
 import google.generativeai as genai
+import json
+import re
 from dotenv import load_dotenv
 
 
@@ -21,13 +23,42 @@ def build_prompt(paper_text: str) -> str:
     ---
 
     Generate the presentation content based on this text.
+    Return only valid JSON, do not include stuff like '''json. 
+    Do not include code fences, explanations, or text before/after. 
+    If you cannot produce valid JSON, return {{}}.
+    Please respond in **valid JSON** format as shown below:
+
+    {{
+    "title": "example title",
+    "slides": [
+        {{
+        "header": "Example Header",
+        "bullets": [
+            "First point",
+            "Second point"
+        ]
+        }}
+    ]
+    }}
+    
     """
 
-
+def parse_text_to_json(text:str):
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        raise ValueError("No JSON found in response.")
+    
+    cleaned = match.group(0)
+    try:
+        data = json.loads(cleaned)
+    except Exception as e:
+        raise ValueError("JSON cannot be parsed {e}")
+    return data
 def generate_slide_content(paper_text: str) -> str:
     """
     Analyzes paper text and generates structured slide content using the Gemini API.
     """
+    print("Generating slide content using gemini API")
     if not paper_text:
         raise ValueError("Paper text cannot be empty.")
 
@@ -41,7 +72,11 @@ def generate_slide_content(paper_text: str) -> str:
         model = genai.GenerativeModel('models/gemini-pro-latest')
         prompt = build_prompt(paper_text)
         response = model.generate_content(prompt)
-        return response.text
+        print("Response got from LLM")
+        json_text = response.text
+        json = parse_text_to_json(json_text)
+        print(json)
+        return json
     except Exception as e:
         print(f"An error occurred: {e}")
         return "Error: Could not generate slide content."

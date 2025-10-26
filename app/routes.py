@@ -1,6 +1,7 @@
 from flask import request, jsonify, send_file
 from app.tools.pdf_to_slides import pdf_to_slides
 from app.tools.pdf_parser import parse_pdf
+from app.tools.TextToSlideContent import generate_slide_content
 import io
 
 def register_routes(app):
@@ -36,7 +37,7 @@ def register_routes(app):
     @app.route('/test_pdf_parsing', methods=["POST"])
     def test_pdf():
         pdf_file = request.files.get("file")
-        if not pdf_file in request.files:
+        if not pdf_file:
             return jsonify({"error": "No file uploaded"}), 400
         if pdf_file.filename == "":
             return jsonify({"error": "File has no name"}), 400
@@ -45,6 +46,6 @@ def register_routes(app):
 
         parsed = parse_pdf(pdf_file)
         text = parsed["text"]
-
+        res = generate_slide_content(text)
         # Return text directly
-        return jsonify({"text": text})
+        return res
