@@ -7,3 +7,5 @@ __pycache__/
 *.pdb
 
 .env
+
+.DS_Store

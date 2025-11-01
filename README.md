@@ -18,7 +18,7 @@ It extracts text and images from the input PDF, generates slide content using th
 ---
 
 ## 🧩 Project Structure
-
+```
 AutoSlides-backend/
 ├── app/
 │ ├── init.py
@@ -45,7 +45,7 @@ AutoSlides-backend/
 ├── requirements.txt
 ├── pytest.ini
 └── README.md
-
+```
 ## 🧠 How It Works
 
 1. **Upload PDF**  
