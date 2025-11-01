@@ -1,9 +1,10 @@
-import os
+import os, time
 import google.generativeai as genai
 import json
 import re
 from dotenv import load_dotenv
-
+from app.utils.logger import get_logger
+logger = get_logger("Gemini")
 
 def build_prompt(paper_text: str) -> str:
     """Creates the detailed prompt for the Gemini API."""
@@ -42,7 +43,16 @@ def build_prompt(paper_text: str) -> str:
     }}
     
     """
+def get_genai_model():
+    """Return a configured Gemini model or raise error if key missing."""
+    load_dotenv()
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        logger.exception("Cannot find Gemini API Key")
+        raise ValueError("Google API Key not found. Please set it in your .env file.")
 
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel('models/gemini-pro-latest')
 def parse_text_to_json(text:str):
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
@@ -58,25 +68,23 @@ def generate_slide_content(paper_text: str) -> str:
     """
     Analyzes paper text and generates structured slide content using the Gemini API.
     """
-    print("Generating slide content using gemini API")
+    logger.info("Generating slide content using gemini API")
     if not paper_text:
         raise ValueError("Paper text cannot be empty.")
 
-    load_dotenv()
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("Google API Key not found. Please set it in your .env file.")
-
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('models/gemini-pro-latest')
+        start = time.time()
+        model = get_genai_model()
         prompt = build_prompt(paper_text)
         response = model.generate_content(prompt)
-        print("Response got from LLM")
+        elapsed = time.time() - start
+        logger.info(f"Response got from LLM in {elapsed:.2f} seconds")
         json_text = response.text
+        logger.info("Parsing output into json")
         json = parse_text_to_json(json_text)
-        print(json)
+        logger.info("LLM output successfully parsed to json")
+        logger.debug(json)
         return json
     except Exception as e:
         print(f"An error occurred: {e}")
-        return "Error: Could not generate slide content."
+        raise ValueError(f"Error: {e}")
