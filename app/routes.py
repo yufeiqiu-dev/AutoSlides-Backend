@@ -3,6 +3,7 @@ from app.tools.pdf_to_slides import pdf_to_slides
 from app.tools.pdf_parser import parse_pdf
 from app.tools.TextToSlideContent import generate_slide_content
 from app.utils.logger import get_logger
+from app.utils.s3_uploader import upload_ppt_to_s3, generate_presigned_url
 import io
 
 logger = get_logger("AutoSlides")
@@ -29,15 +30,11 @@ def register_routes(app):
         # Process the PDF
         try:
             pptx_bytes = pdf_to_slides(pdf_file)  # returns BytesIO buffer or bytes
-            pptx_bytes.seek(0) # ensure pointer at start
+            # upload the current generated ppt to s3
+            upload_ppt_to_s3(ppt_bytes=pptx_bytes, user_id="test")
+            url = generate_presigned_url(key="test.pptx")
+            # obtain the presigned url for users to download
+            return jsonify({"download_url": url}), 200
         except Exception as e:
             logger.exception("Failed to generate PPTX")
             return jsonify({"error": "Internal Parsing Error"}), 500
-
-        # Send back PowerPoint file
-        return send_file(
-            pptx_bytes,
-            as_attachment=True,
-            download_name="AutoSlides.pptx",
-            mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        )

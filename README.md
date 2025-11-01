@@ -51,9 +51,10 @@ AutoSlides-backend/
 1. **Upload PDF**  
    The client sends a `multipart/form-data` POST request to `/pdf2slides` with key named file and value as the pdf file.
 
-2. **Receive PPTX**
-    The client then receives the pptx powerpoint
-
+2. **Sends PPTX to s3 for storage**
+    The server stores the generated pptx on aws s3 for secure storage
+3. **Sends presigned url to the generated pptx on s3**
+    The server then generates the presigned s3 link and send it in json response
 
 ## Installation
 1. Clone the repo
@@ -64,6 +65,11 @@ AutoSlides-backend/
  - pip install -r requirements.txt
 4. save your gemini api key to the environment
  - GOOGLE_API_KEY=your_google_gemini_api_key_here
+5. save your AWS Credentials, region, bucket name, etc
+ - AWS_ACCESS_KEY_ID=your access key
+ - AWS_SECRET_ACCESS_KEY=your access key
+ - AWS_BUCKET_NAME=your aws s3 bucket name
+ - AWS_REGION=your aws region where your s3 bucket at
 5. run the server
  - python -m app.app
 6. upload via Postman or curl
