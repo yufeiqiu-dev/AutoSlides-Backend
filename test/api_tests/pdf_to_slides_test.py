@@ -23,6 +23,16 @@ def test_pdf2slides_success(client, mocker, test_pdf_path):
         'app.tools.TextToSlideContent.genai.GenerativeModel',
         return_value=mock_model_instance
     )
+
+    # assuming s3 works
+    mock_s3_client = mocker.MagicMock()
+    mock_s3_client.upload_fileobj.return_value = None
+    mocker.patch("app.utils.s3_uploader.s3_client", mock_s3_client)
+    mocker.patch("app.routes.upload_ppt_to_s3",
+                 return_value=None)
+    
+    mocker.patch("app.routes.generate_presigned_url",
+                 return_value="https://mock-s3-url.com/test_simple_pdf.pptx")
     response = client.post(
         "/pdf2slides",
         data={"file": (pdf_bytes, pdf_bytes.name)},
@@ -30,10 +40,9 @@ def test_pdf2slides_success(client, mocker, test_pdf_path):
     )
 
     assert response.status_code == 200
-    assert response.headers["Content-Type"].startswith(
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    )
-    assert response.data[:4] != b""  # check that some file content was returned
+    data = response.get_json()
+    assert "download_url" in data
+    assert data["download_url"].startswith("https://mock-s3-url.com/")
 
 
 def test_no_gemini_api_key(client, mocker, test_pdf_path):
