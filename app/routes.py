@@ -32,7 +32,7 @@ def register_routes(app):
             pptx_bytes.seek(0) # ensure pointer at start
         except Exception as e:
             logger.exception("Failed to generate PPTX")
-            return jsonify({"error": "Internal Parsing Error"}), 400
+            return jsonify({"error": "Internal Parsing Error"}), 500
 
         # Send back PowerPoint file
         return send_file(

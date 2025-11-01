@@ -43,7 +43,16 @@ def build_prompt(paper_text: str) -> str:
     }}
     
     """
+def get_genai_model():
+    """Return a configured Gemini model or raise error if key missing."""
+    load_dotenv()
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        logger.exception("Cannot find Gemini API Key")
+        raise ValueError("Google API Key not found. Please set it in your .env file.")
 
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel('models/gemini-pro-latest')
 def parse_text_to_json(text:str):
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
@@ -63,16 +72,9 @@ def generate_slide_content(paper_text: str) -> str:
     if not paper_text:
         raise ValueError("Paper text cannot be empty.")
 
-    load_dotenv()
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        logger.exception("Cannot find Gemini API Key")
-        raise ValueError("Google API Key not found. Please set it in your .env file.")
-
     try:
         start = time.time()
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('models/gemini-pro-latest')
+        model = get_genai_model()
         prompt = build_prompt(paper_text)
         response = model.generate_content(prompt)
         elapsed = time.time() - start
@@ -85,4 +87,4 @@ def generate_slide_content(paper_text: str) -> str:
         return json
     except Exception as e:
         print(f"An error occurred: {e}")
-        return "Error: Could not generate slide content."
+        raise ValueError(f"Error: {e}")
