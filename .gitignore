@@ -5,7 +5,8 @@ __pycache__/
 *.pyo
 *.pyd
 *.pdb
-
+firebase-key.json
 .env
-
+app/tools/get_token.py
 .DS_Store
+.idea/
