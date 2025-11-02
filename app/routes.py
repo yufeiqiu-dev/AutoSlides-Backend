@@ -5,7 +5,8 @@ from app.tools.pdf_parser import parse_pdf
 from app.tools.TextToSlideContent import generate_slide_content
 from app.utils.logger import get_logger
 from app.utils.s3_uploader import upload_ppt_to_s3, generate_presigned_url
-import io
+import io, os
+import requests
 from firebase_admin import auth  # <-- NEW
 from functools import wraps  # <-- NEW
 
@@ -44,7 +45,6 @@ def protected_by_firebase(f):
 
 # --- End of new decorator ---
 
-
 def register_routes(app):
     """Register all routes for the Flask app."""
 
@@ -75,9 +75,8 @@ def register_routes(app):
             logger.exception("Failed to generate PPTX")
             return jsonify({"error": "Internal Parsing Error"}), 500
 
-    # --- NEW: This is your new, protected endpoint ---
     @app.route("/protected/pdf2slides", methods=["POST"])
-    @protected_by_firebase  # <-- This line enables the auth check
+    @protected_by_firebase  
     def protected_pdf2slides():
         # 'g.user' is available here thanks to the decorator
         user_uid = g.user.get('uid', 'unknown_user')
@@ -93,18 +92,42 @@ def register_routes(app):
         # Process the PDF
         try:
             pptx_bytes = pdf_to_slides(pdf_file)
-
-            logger.info(f"Skipping AWS S3 upload for protected route (user: {user_uid})")
-
-            upload_ppt_to_s3(ppt_bytes=pptx_bytes, user_id=user_uid) # <-- COMMENTED OUT
-            url = generate_presigned_url(key=f"{user_uid}.pptx")       # <-- COMMENTED OUT
+            upload_ppt_to_s3(ppt_bytes=pptx_bytes, user_id=user_uid) 
+            url = generate_presigned_url(key=f"{user_uid}.pptx") 
 
             # Just return a success message instead of the S3 URL
             return jsonify({
-                "message": "File processed successfully by protected route",
+                "download_url": url,
                 "user_uid": user_uid
             }), 200
 
         except Exception as e:
             logger.exception(f"Failed to generate PPTX for user: {user_uid}")
             return jsonify({"error": "Internal Parsing Error"}), 500
+    
+    @app.route("/auth", methods=["POST"])
+    def authenticate():
+        """Login to Firebase with email/password and return ID token"""
+        FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")
+        if not FIREBASE_API_KEY:
+            logger.info("Firebase API Key not found")
+            return jsonify({"error": "Internal Error, Firebase api key not found"}), 500
+        data = request.json
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return jsonify({"error": "Missing email or password"}), 400
+
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+
+        res = requests.post(url, json=payload)
+        if res.status_code != 200:
+            return jsonify({"error": "Firebase auth failed", "details": res.json()}), 400
+
+        return jsonify(res.json())
