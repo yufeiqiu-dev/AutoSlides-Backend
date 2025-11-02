@@ -79,3 +79,15 @@ def test_not_a_pdf_file(client):
     # Assertions
     assert response.status_code == 400
     assert "error" in response.json
+
+def test_protected_route_no_token(client):
+    fake_txt = io.BytesIO(b"Hello, I am not a PDF file")
+    fake_txt.name = "not_a_pdf.txt"
+
+    response = client.post(
+        "/protected/pdf2slides",
+        data={"file": (fake_txt, fake_txt.name)},
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 401

@@ -32,7 +32,8 @@ AutoSlides-backend/
 │ │ └── json_to_ppt.py # JSON → PowerPoint
 │ └── utils/
 | │ ├── init.py
-| │ └── logger.py # Centralized logging
+| │ ├── logger.py # Centralized logging
+| | └── s3_uploader.py # Launch s3 client and upload to s3 buckets
 ├── test/
 │ ├── init.py
 │ ├── pdf_parser_test.py
@@ -70,6 +71,12 @@ AutoSlides-backend/
  - AWS_SECRET_ACCESS_KEY=your access key
  - AWS_BUCKET_NAME=your aws s3 bucket name
  - AWS_REGION=your aws region where your s3 bucket at
-5. run the server
+6. Add firebase-key.json to your folder
+ - FIREBASE_KEY_PATH=the path to your firebase-key.json
+ - FIREBASE_API_KEY=(Optional if you want to use the auth route to get your tokens)
+7. run the server
  - python -m app.app
-6. upload via Postman or curl
+8. upload via Postman or curl
+
+## Testing
+Run pytest -v
